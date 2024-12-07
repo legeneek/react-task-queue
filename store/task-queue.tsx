@@ -102,6 +102,7 @@ function reducer(
     case "limit": {
       const { n } = action.data as LimitActionData;
       limit = n;
+      return state;
     }
     default: {
       throw Error("Unknown action: " + action.type);
