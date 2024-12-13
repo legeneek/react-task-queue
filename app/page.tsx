@@ -1,7 +1,7 @@
 "use client";
 import { TaskQueueProvider, useTaskQueueDispatch } from "@/store/task-queue";
-import { TaskExecutor } from "./task-excutor";
-import { ColorProvider, useColor } from "@/store/color-store";
+import { TaskExecutor } from "./task-executor";
+import { ColorProvider, useColor, useColorDispatch } from "@/store/color-store";
 import { useEffect } from "react";
 
 export default function Home() {
@@ -10,14 +10,33 @@ export default function Home() {
       <ColorProvider>
         <ColorList />
         <ColorTaskGen />
-        <TaskExecutor />
       </ColorProvider>
+      <TaskExecutor />
     </TaskQueueProvider>
   );
 }
 
+async function pickColor(type: string) {
+  return new Promise((resolve, _) => {
+    setTimeout(() => {
+      let color;
+      const num = Math.floor(255 * Math.random());
+      if (type === "r") {
+        color = [num, 0, 0];
+      } else if (type === "g") {
+        color = [0, num, 0];
+      } else {
+        color = [0, 0, num];
+      }
+      resolve(color);
+    }, 1000);
+  });
+}
+
 function ColorTaskGen() {
   const dispatch = useTaskQueueDispatch();
+  const colorDispatch = useColorDispatch();
+
   useEffect(() => {
     const arr = ["r", "g", "b"];
     const list = Array(20)
@@ -25,7 +44,10 @@ function ColorTaskGen() {
       .map((_, i: number) => {
         return {
           type: "pickColor",
-          data: arr[i % 3],
+          executor: async () => pickColor(arr[i % 3]),
+          onFinish: (res: any) => {
+            colorDispatch({ type: "addColor", data: res });
+          },
         };
       });
     dispatch({
@@ -40,6 +62,13 @@ function ColorTaskGen() {
 
 function ColorList() {
   const { colors } = useColor();
+  const dispatch = useTaskQueueDispatch();
+
+  useEffect(() => {
+    setTimeout(() => {
+      dispatch({ type: "limit", data: { n: 2 } });
+    }, 4000);
+  }, []);
 
   return (
     <div className="flex gap-1 flex-wrap bg-slate-50">

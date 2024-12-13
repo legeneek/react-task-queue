@@ -1,8 +1,10 @@
 import { createContext, useContext, useReducer } from "react";
 
 export interface Task {
-  type: string;
-  data: any;
+  type?: string;
+  executor: any;
+  onFinish?: any;
+  onError?: any;
 }
 
 export interface QueueTask extends Task {
@@ -23,7 +25,7 @@ interface LimitActionData {
 
 let baseId = 1;
 
-let limit = 2;
+let limit = 1;
 
 const TaskQueueContext = createContext<any>(null);
 
